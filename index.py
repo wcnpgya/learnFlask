@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session, url_for
 
 #实例化Flask对象
 app = Flask(__name__)
@@ -11,15 +11,23 @@ USERS = {
 @app.route('/detail/<int:nid>', methods=['GET'])
 def detail(nid):
     info = USERS.get(nid)
+    username = session.get('user_info')
+    if not username:
+        url = url_for('测试反向url')
+        return redirect(url)
     return render_template('detail.html', info=info)
 
 
 @app.route('/index', methods=['GET'])
 def index():
+    username = session.get('user_info')
+    if not username:
+        url = url_for('测试反向url')
+        return redirect(url)
     return render_template('index.html', user_dict=USERS)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'], endpoint='测试反向url')
 def login():
     user = {'nickname': 'MIKE'}
     if request.method == "GET":
@@ -28,6 +36,7 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         if username == 'alex' and password == '123':
+            session['user_info'] = username
             return redirect('http://www.luffycity.com')
         return render_template("login.html", title='login', user=user, error='用户名或密码错误')
 
